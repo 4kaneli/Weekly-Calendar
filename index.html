@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<!-- 📱 MOBILE FIX -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Weekly Calendar</title>
+
+<style>
+body {
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  transition: background 1.2s ease;
+}
+
+
+/* 📌 TEXT */
+.text-box {
+  position: absolute;
+  top: 70px;
+  text-align: center;
+}
+
+h1 {
+  font-size: 60px;
+  margin: 0;
+}
+
+/* 📸 IMAGE */
+img {
+  width: 580px;
+  margin-top: 140px;
+
+  opacity: 0;
+  transform: translateX(80px) scale(0.95);
+  transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+
+  animation: float 4s ease-in-out infinite;
+}
+
+img.show {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+img.exit {
+  opacity: 0;
+  transform: translateX(-80px) scale(0.95);
+}
+
+/* 🕺 FRIDAY */
+.dance {
+  animation: dance 0.6s infinite ease-in-out;
+}
+
+/* 🔥 SATURDAY */
+.dance-sat {
+  animation: danceSat 0.25s infinite ease-in-out;
+}
+
+.jump-sat {
+  animation: jumpSat 0.6s infinite ease-in-out;
+}
+
+@keyframes dance {
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(2deg); }
+  100% { transform: translateY(0) rotate(-2deg); }
+}
+
+@keyframes danceSat {
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(4deg); }
+  100% { transform: translateY(0) rotate(-4deg); }
+}
+
+@keyframes jumpSat {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-35px); }
+  100% { transform: translateY(0); }
+}
+
+/* 🎵 NOTES */
+.note {
+  position: absolute;
+  font-size: 30px;
+  animation: floatUp 2s linear forwards;
+  pointer-events: none;
+}
+
+@keyframes floatUp {
+  0% { transform: translateY(0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(-220px); opacity: 0; }
+}
+
+/* 😴 ZZZ */
+.zzz {
+  position: absolute;
+  font-size: 28px;
+  font-weight: bold;
+  opacity: 0;
+  animation: zzzFloat 2.2s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes zzzFloat {
+  0% {
+    transform: translateY(0) scale(0.8);
+    opacity: 0;
+  }
+  20% { opacity: 1; }
+  60% {
+    transform: translateY(-40px) scale(1.2);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-100px) scale(1.4);
+    opacity: 0;
+  }
+}
+
+/* ⬅️➡️ */
+.nav {
+  position: absolute;
+  width: 90%;
+  display: flex;
+  justify-content: space-between;
+  top: 50%;
+}
+
+button {
+  font-size: 55px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* 📱 MOBILE ONLY (NON CAMBIA IL PC) */
+@media (max-width: 768px) {
+
+  h1 {
+    font-size: 10vw;
+  }
+
+  .text-box {
+    top: 40px;
+  }
+
+  img {
+    width: 85vw;
+    max-width: 420px;
+    margin-top: 120px;
+  }
+
+  button {
+    font-size: 40px;
+  }
+
+  .nav {
+    width: 100%;
+    padding: 0 20px;
+  }
+  /* 📱 MOBILE ONLY */
+@media (max-width: 768px) {
+
+  img {
+    width: 100vw;        /* 📌 più grande */
+    max-width: 520px;
+    margin-top: -60px;   /* 📌 più in alto */
+  }
+  @media (max-width: 768px) {
+
+  h1 {
+    font-size: 14vw;   /* 📌 più grande */
+  }
+
+  .text-box {
+    top: 100px;        /* 📌 più giù */
+  }
+  @media (max-width: 768px) {
+  .note {
+    font-size: 42px;
+  }
+  @media (max-width: 48px) {
+  .zzz {
+    font-size: 24px;
+  }
+}
+}
+
+}
+
+}
+}
+</style>
+</head>
+
+<body>
+
+<div class="text-box">
+  <h1 id="dayName"></h1>
+</div>
+
+<img id="dayImage" src="" alt="img">
+
+<div class="nav">
+  <button id="prev">⬅</button>
+  <button id="next">➡</button>
+</div>
+
+<script>
+const days = ["SUNDAY","MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"];
+
+let today = new Date().getDay();
+const map = {0:7,1:1,2:2,3:3,4:4,5:5,6:6};
+
+const nameEl = document.getElementById("dayName");
+const img = document.getElementById("dayImage");
+
+let noteLoop;
+let zzzLoop;
+
+/* 🌈 BACKGROUND */
+const backgrounds = [
+  "linear-gradient(135deg,#fff6c7,#ffeaa7)",
+  "linear-gradient(135deg,#e3f2fd,#bbdefb)",
+  "linear-gradient(135deg,#f3e5f5,#e1bee7)",
+  "linear-gradient(135deg,#e8f5e9,#c8e6c9)",
+  "linear-gradient(135deg,#fff3e0,#ffe0b2)",
+  "linear-gradient(135deg,#ffe0f0,#ffb6c1)",
+  "linear-gradient(135deg,#d1c4e9,#b39ddb)"
+];
+
+/* 🎯 UPDATE */
+function update(day) {
+  today = day;
+
+  nameEl.innerText = days[today];
+  document.body.style.background = backgrounds[today];
+
+  img.classList.remove("show");
+  img.classList.add("exit");
+
+  setTimeout(() => {
+    img.src = map[today] + ".png";
+
+  img.classList.remove("dance", "dance-sat", "jump-sat", "exit");
+img.classList.add("show");
+
+/* ✨ vibrazione per TUTTI i png */
+img.classList.add("vibrate");
+
+    if (today === 5) img.classList.add("dance");
+
+    if (today === 6) {
+      img.classList.add("dance-sat");
+      img.classList.add("jump-sat");
+    }
+
+  }, 300);
+
+  clearInterval(noteLoop);
+  if (today === 5 || today === 6) {
+    noteLoop = setInterval(createNote, 450);
+  }
+
+  clearInterval(zzzLoop);
+  if (today === 0) {
+    zzzLoop = setInterval(createZzz, 700);
+  }
+}
+
+
+
+update(today);
+
+/* ⬅️➡️ */
+document.getElementById("prev").onclick = () => update((today - 1 + 7) % 7);
+document.getElementById("next").onclick = () => update((today + 1) % 7);
+
+/* 🎵 NOTE */
+function createNote(x, y) {
+  const note = document.createElement("div");
+  note.className = "note";
+  note.innerText = "🎵";
+
+  const rect = img.getBoundingClientRect();
+
+  const isMobile = window.innerWidth <= 768;
+
+  let posX, posY;
+
+  if (isMobile) {
+    // 📱 MOBILE: note sparse OVUNQUE
+    posX = x ?? Math.random() * window.innerWidth;
+    posY = y ?? Math.random() * window.innerHeight * 0.8;
+  } else {
+    // 💻 DESKTOP: vicino al PNG
+    const side = Math.random() < 0.5 ? -1 : 1;
+
+    posX = x ?? rect.left + (side === -1 ? -40 : rect.width + 20) + (Math.random() * 30);
+    posY = y ?? rect.top + rect.height * 0.7 + (Math.random() * 40 - 20);
+  }
+
+  
+
+  note.style.left = posX + "px";
+  note.style.top = posY + "px";
+
+  document.body.appendChild(note);
+
+  setTimeout(() => note.remove(), 2000);
+}
+
+/* 🔊 AUDIO */
+let audioCtx;
+
+function playNoteSound() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.type = "square";
+  osc.frequency.value = 900;
+
+  gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.15);
+}
+
+/* 📱 CLICK + TOUCH */
+function handleInput(e) {
+  if (today === 5 || today === 6) {
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
+
+    createNote(x, y);
+    playNoteSound();
+  }
+}
+
+document.addEventListener("click", handleInput);
+document.addEventListener("touchstart", handleInput);
+
+function createZzz() {
+  const z = document.createElement("div");
+  z.className = "zzz";
+  z.innerText = "zzz";
+
+  const rect = img.getBoundingClientRect();
+
+  z.style.left = (rect.left + rect.width * 0.5) + "px";
+
+  // 👇 alzato leggermente
+  z.style.top = (rect.top + rect.height * 0.6 - 15) + "px";
+
+  document.body.appendChild(z);
+  setTimeout(() => z.remove(), 2200);
+}
+</script>
+
+</body>
+</html>
